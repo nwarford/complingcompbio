@@ -2,22 +2,26 @@ import numpy as np
 from gensim.models import LdaModel
 from gensim.matutils import Scipy2Corpus
 from scipy import sparse
+from gensim.corpora import Dictionary
 
 data = np.random.randint(low = 0, high = 100, size = (96, 5), dtype = int)
 #print(data)
-corpus = sparse.csc_matrix(data.any())
+corpus = sparse.csc_matrix(data)
 print(corpus)
 num_topics = 96
 chunksize = 20
 passes = 20
 iterations = 400
 eval_every = None
-#temp = data[0]  # This is only to "load" the dictionary.                                           
-#id2word = data.id2token
+
+dictionary = Dictionary(data)
+print(dictionary)
+temp = dictionary[0]  # This is only to "load" the dictionary.                                           
+id2word = dictionary.id2token
 
 model = LdaModel(
     corpus=corpus,
-    #id2word=id2word,
+    id2word=id2word
     #chunksize=chunksize,
     #alpha='auto',
     #eta='auto',
