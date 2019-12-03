@@ -133,10 +133,33 @@ name_stm_vanilla_table <- function(k_vec, my_init, tag="pbmc") {
 }
 
 # run the LDA model from Structural Topic Model package without metadata
-stm_vanilla_exp <- function(data, k_vec, my_init="Spectral") {
+stm_transpose_vanilla_exp <- function(data, k_vec, my_init="Spectral") {
   # convert to [Cells x Regions] (this implementation takes [doc x terms] matrix)
   print("transposing matrix")
   doc_term_mtx = Matrix::t(data)
+
+  ll_start = vector(mode="numeric", length=length(k_vec))
+  ll_final = vector(mode="numeric", length=length(k_vec))
+
+  # run LDA
+  for (i in 1:length(k_vec)) {
+    num_topics = k_vec[i]
+    print(paste0("Running STM LDA on ", num_topics, " topics"))
+    stm_model <- stm(documents=doc_term_mtx, K=num_topics, init.type=my_init)
+    conv <- stm_model$convergence # readout of model likelihood
+    
+    ll_start[i] = conv$bound[1]
+    ll_final[i] = conv$bound[length(conv$bound)]
+  }
+  results = data.frame(k_vec, ll_start, ll_final)
+  write.table(results, "test_name_custom.txt")
+  print("wrote table with custom name, trying template name")
+  print(my_init)
+  write.table(results, name_stm_vanilla_table(k_vec, my_init) )
+}
+
+# run the LDA model from Structural Topic Model package without metadata
+stm_vanilla_exp <- function(doc_term_mtx, k_vec, my_init="Spectral") {
 
   ll_start = vector(mode="numeric", length=length(k_vec))
   ll_final = vector(mode="numeric", length=length(k_vec))
@@ -181,6 +204,15 @@ stm_prevalence_exp <- function(doc_term_mtx, metadata, k_vec, formula, my_init="
   print(my_init)
   write.table(results, name_stm_vanilla_table(k_vec, my_init) )
 }
+
+# run sbs vanilla baseline
+
+vanilla_baseline_experiment <- function() {
+	doc_term_mtx = load_sbs_data()
+	vanilla_model = stm(doc_term_mtx,K=2, init.type="Random")
+}
+
+
 
 # run toy example
 
@@ -252,6 +284,15 @@ gen_toy_metadata <- function(){
 # reading data     #
 ####################
 
+load_sbs_data <- function(){
+	unformatted_df = read.table(file = "sbs_counts.tsv", sep="\t", header=TRUE)
+	rownames(unformatted_df) = unformatted_df$X
+	df = unformatted_df[-1]
+
+	m = data.matrix(df, rownames.force=T)
+	return(as(m, "dgCMatrix"))	
+}
+
 
 load_trimmed_cd4_atac <- function() {
   cd4 = as(Matrix::readMM("../data/trimmed_CD4_atac.mtx"), "dgCMatrix")
@@ -282,7 +323,7 @@ load_pbmc5k_atac <- function() {
 
 print(gen_toy_mtx())
 print(gen_toy_metadata())
-
+vanilla_baseline_experiment()
 
 
 
