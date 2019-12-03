@@ -18,6 +18,14 @@ generate_names <- function(n, s) {
   return(x)
 }
 
+generate_doc_names <- function(n) {
+	return(generate_names(n, 'd'))
+}
+
+generate_word_names <- function(n) {
+	return(generate_names(n, 'w'))
+}
+
 generate_region_names <- function(n) {
   return( generate_names(n, 'r') )
 }
@@ -151,6 +159,95 @@ stm_vanilla_exp <- function(data, k_vec, my_init="Spectral") {
 }
 
 
+# run the LDA model from Structural Topic Model package without metadata
+stm_prevalence_exp <- function(doc_term_mtx, metadata, k_vec, formula, my_init="Spectral") {
+
+  ll_start = vector(mode="numeric", length=length(k_vec))
+  ll_final = vector(mode="numeric", length=length(k_vec))
+
+  # run LDA
+  for (i in 1:length(k_vec)) {
+    num_topics = k_vec[i]
+    print(paste0("Running STM LDA on ", num_topics, " topics"))
+    stm_model <- stm(documents=doc_term_mtx, data=metadata, prevalence=formula, K=num_topics, init.type=my_init)
+    conv <- stm_model$convergence # readout of model likelihood
+    
+    ll_start[i] = conv$bound[1]
+    ll_final[i] = conv$bound[length(conv$bound)]
+  }
+  results = data.frame(k_vec, ll_start, ll_final)
+  write.table(results, "test_name_custom.txt")
+  print("wrote table with custom name, trying template name")
+  print(my_init)
+  write.table(results, name_stm_vanilla_table(k_vec, my_init) )
+}
+
+# run toy example
+
+toy_example_experiment <- function(){
+	doc_term_mtx = gen_toy_mtx()
+	metadata = gen_toy_metadata()
+	print("Toy Data:")
+	print(doc_term_mtx)
+	print("***")
+	print("***")
+	print("***")
+	print("Toy Metadata:")
+	print(head(metadata))
+	print("...")
+	print(tail(metadata))
+
+	vanilla_model = stm(documents=doc_term_mtx, K=2, data=metadata, init.type="Random", verbose=F)
+	print("***")
+	print("***")
+	print("***")
+	print("Vanilla model topic contributions:")
+	print(vanilla_model$theta)
+	covariate_model = stm(documents=doc_term_mtx, K=2, data=metadata, prevalence=~xs, init.type="Random", verbose=F)
+
+	print("Covariate model topic contributions:")
+	print(covariate_model$theta)
+}
+
+
+#######################
+# generate toy data   #
+#######################
+
+gen_toy_mtx <- function(){
+	toy_data = matrix(nrow=22, ncol=6)
+	rownames(toy_data) = generate_doc_names(22)
+	colnames(toy_data) = generate_word_names(6)	
+
+	for (i in 1:10) {
+		toy_data[i,] = c(10,10,10,1,1,1)
+	}
+	for (i in 11:20) {
+		toy_data[i,] = c(1,1,1,10,10,10)	
+	}
+	for (i in 21:22){
+		toy_data[i,] = c(1,1,1,1,1,1)
+	}
+	return(as(toy_data, "dgCMatrix"))
+}
+
+gen_toy_metadata <- function(){
+	xs = numeric(22)
+	ys = numeric(22)
+	cat = character(22)
+	
+	xs = c(sample(50:65, 10, replace=T), sample(1:5, 10, replace=T), sample(50:65, 2, replace=T))
+	ys = c(sample(1:5, 10, replace=T), sample(50:65, 10, replace=T), sample(1:5, 2, replace=T))
+	cat = c(rep("a", 10), rep("b", 10), rep("a", 2))
+
+	df = data.frame(xs, ys, cat)
+	rownames(df) = generate_doc_names(22)
+	return(df)
+}
+
+
+
+
 ####################
 # reading data     #
 ####################
@@ -183,16 +280,19 @@ load_pbmc5k_atac <- function() {
 
 
 
+print(gen_toy_mtx())
+print(gen_toy_metadata())
+
 
 
 
 # [Regions x Cells]
-print("reading data")
+#print("reading data")
 #cd4 = as(Matrix::readMM("../data/trimmed_CD4_atac.mtx"), "dgCMatrix")
 
-pbmc = load_pbmc5k_atac()
+#pbmc = load_pbmc5k_atac()
 
-print("done reading data")
+#print("done reading data")
 
 #rownames(cd4) = generate_region_names(dim(cd4)[1])
 #colnames(cd4) = generate_cell_names(dim(cd4)[2])
@@ -201,54 +301,10 @@ print("done reading data")
 #######################
 # main                #
 #######################
-print("starting experimental protocol")
-rlda_gibbs_exp(pbmc, c(1,2,3,5,10))
-rtopicmodels_vem_exp(pbmc, c(2,3,5,10))
-stm_vanilla_exp(pbmc, c(2,3,5,10), my_init="Spectral")
+#print("starting experimental protocol")
+#rlda_gibbs_exp(pbmc, c(1,2,3,5,10))
+#rtopicmodels_vem_exp(pbmc, c(2,3,5,10))
+#stm_vanilla_exp(pbmc, c(2,3,5,10), my_init="Spectral")
 
 
 
-
-##############################################
-# using r lda package (as in cisTopic)       #
-##############################################
-# has only gibbs sampler, no variational EM
-
-
-
-# # Take binary count matrix
-# object.binary.count.matrix <- cd4
-# cellnames <- colnames(object.binary.count.matrix)
-# regionnames <- rownames(object.binary.count.matrix)
-#
-#
-# # Prepare data for r lda implementation
-# print('Formatting data...')
-# cellList <- split(as.integer(object.binary.count.matrix@i), rep(seq_along(object.binary.count.matrix@p+1), times=diff(c(object.binary.count.matrix@p+1, length(object.binary.count.matrix@i) + 1))))
-# rm(object.binary.count.matrix)
-# cellList <- lapply(cellList, function(x) {x <- rbind(x, rep(as.integer(1), length(x)))})
-# names(cellList) <- cellnames
-# cellList <- lapply(cellList, function(x) {colnames(x) <- regionnames[x[1,]+1];x})
-# regionList <- regionnames
-#
-# print("Running LDA w Gibbs sampler")
-# num_topics = 10
-# system.time(model <- lda.collapsed.gibbs.sampler(cellList, num_topics, regionList, num.iterations=500, alpha=50/num_topics, eta=0.1, compute.log.likelihood = TRUE, burnin=250))
-# print(model$log.likelihoods[, 490:500])
-
-
-
-
-##############################################
-# using r topicmodels package                #
-##############################################
-# has gibbs and variational EM
-
-# convert to [Cells x Regions] (this implementation takes [doc x terms] matrix)
-# print("transposing matrix")
-# doc_term_mtx = Matrix::t(cd4)
-#
-# print("Running VEM LDA")
-# system.time(vem_model <- LDA(doc_term_mtx, k=10, method="VEM"))
-# print(perplexity(vem_model))
-# print(logLik(vem_model))
