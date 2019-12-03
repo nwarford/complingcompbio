@@ -5,23 +5,31 @@ from scipy import sparse
 from gensim.corpora import Dictionary
 
 from gensim.test.utils import common_texts
+import pandas as pd
 
 # Create a corpus from a list of texts
 #common_dictionary = Dictionary(common_texts)
 #common_corpus = [common_dictionary.doc2bow(text) for text in common_texts]
 #print(common_texts)
 
-data = np.random.randint(low = 0, high = 100, size = (96, 6), dtype = int)
-for i in range(48):
-    for j in range(3):
-        data[i,j] = 0
-        data[95-i,5-j] = 0
-data = data.T
-print(data)
+data_toy = np.random.randint(low = 0, high = 100, size = (96, 6), dtype = int)
+print(data_toy[0])
+#for i in range(48):
+    #for j in range(3):
+        #data[i,j] = 0
+        #data[95-i,5-j] = 0
+#data = data.T
+#print(data)
+df = pd.read_csv("sbs_counts.tsv", sep="\t", index_col = 0)
 
-dictionary = Dictionary(data)
+data = df.to_numpy(dtype = int)
+print(data[0].size)
 
-corpus = [dictionary.doc2bow(text) for text in data]
+print(data[:5])
+
+dictionary = Dictionary(data[:5])
+
+corpus = [dictionary.doc2bow(text) for text in data[:5]]
 #print(data)
 #corpus = sparse.csc_matrix(data)
 # print(corpus)
