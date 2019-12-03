@@ -13,13 +13,13 @@ import pandas as pd
 #print(common_texts)
 
 data_toy = np.random.randint(low = 0, high = 100, size = (96, 6), dtype = int)
-print(data_toy[0])
 #for i in range(48):
     #for j in range(3):
         #data[i,j] = 0
         #data[95-i,5-j] = 0
 #data = data.T
 #print(data)
+
 df = pd.read_csv("sbs_counts.tsv", sep="\t", index_col = 0)
 
 data = df.to_numpy(dtype = int)
@@ -38,6 +38,13 @@ corpus = Dense2Corpus(data)
 print(data[0].size)
 
 print(data[:5])
+
+df = pd.read_csv("sbs_counts.tsv", sep="\t", index_col = 0, encoding='utf-8')
+#print(df)
+df = df.astype(int)
+data = df.to_numpy()
+print(data.dtype)
+print(data[4][0])
 
 dictionary = Dictionary(data[:5])
 
