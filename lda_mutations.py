@@ -23,6 +23,18 @@ print(data_toy[0])
 df = pd.read_csv("sbs_counts.tsv", sep="\t", index_col = 0)
 
 data = df.to_numpy(dtype = int)
+
+################################
+# here is the fix for parsing  #
+################################
+from gensim.matutils import Dense2Corpus
+
+toy_corpus = Dense2Corpus(data_toy)
+corpus = Dense2Corpus(data)
+
+"""
+
+
 print(data[0].size)
 
 print(data[:5])
@@ -33,6 +45,9 @@ corpus = [dictionary.doc2bow(text) for text in data[:5]]
 #print(data)
 #corpus = sparse.csc_matrix(data)
 # print(corpus)
+"""
+
+
 num_topics = 2
 chunksize = 2000
 passes = 1
@@ -44,12 +59,10 @@ eval_every = 10
 #temp = dictionary[0]  # This is only to "load" the dictionary.                                           
 #id2word = dictionary.id2token
 #id2word = common_dictionary
-id2word = dictionary
 
 model = LdaModel(
     corpus=corpus,
     num_topics=num_topics,
-    id2word=id2word,
     chunksize=chunksize,
     passes=passes,
     iterations=iterations,
@@ -58,13 +71,14 @@ model = LdaModel(
     #eta='auto',
 )
 
-top_topics = model.top_topics(corpus)
-print(top_topics)
-print(type(top_topics))
+#top_topics = model.top_topics(corpus)
+#print(top_topics)
+#print(type(top_topics))
 
-avg_topic_coherence = sum([t[1] for t in top_topics]) / num_topics
-print('Average topic coherence: %.4f.' % avg_topic_coherence)
+#avg_topic_coherence = sum([t[1] for t in top_topics]) / num_topics
+#print('Average topic coherence: %.4f.' % avg_topic_coherence)
 tops = model.get_topics()
+print(tops)
 
 #from pprint import pprint
 #pprint(top_topics)
