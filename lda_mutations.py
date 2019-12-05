@@ -20,10 +20,11 @@ data_toy = np.random.randint(low = 0, high = 100, size = (96, 6), dtype = int)
 #data = data.T
 #print(data)
 
-df = pd.read_csv("sbs_counts.tsv", sep="\t", index_col = 0)
+df = pd.read_csv("merged_counts_indels.tsv", sep="\t", index_col = 0)
 
 data = df.to_numpy(dtype = int)
-
+print(len(data[0]))
+data = data.T
 ################################
 # here is the fix for parsing  #
 ################################
@@ -85,8 +86,8 @@ model = LdaModel(
 #avg_topic_coherence = sum([t[1] for t in top_topics]) / num_topics
 #print('Average topic coherence: %.4f.' % avg_topic_coherence)
 tops = model.get_topics()
-np.savetxt("lda.csv", tops, delimiter=",")
-print(type(tops))
+np.savetxt("lda_output.csv", tops, delimiter=",")
+print(len(tops[0]))
 print(tops)
 
 #from pprint import pprint
