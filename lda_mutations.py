@@ -55,7 +55,7 @@ corpus = [dictionary.doc2bow(text) for text in data[:5]]
 """
 
 
-num_topics = 2
+num_topics = 12
 chunksize = 2000
 passes = 1
 iterations = 50
@@ -85,6 +85,8 @@ model = LdaModel(
 #avg_topic_coherence = sum([t[1] for t in top_topics]) / num_topics
 #print('Average topic coherence: %.4f.' % avg_topic_coherence)
 tops = model.get_topics()
+np.savetxt("lda.csv", tops, delimiter=",")
+print(type(tops))
 print(tops)
 
 #from pprint import pprint
