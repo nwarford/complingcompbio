@@ -40,7 +40,7 @@ MSI_medium = []
 MSI_low = []
 
 
-with open("haradhvala_metadata.csv",mode="r") as meta_raw :
+with open("counts_with_metadata.csv",mode="r") as meta_raw :
     metaIn = csv.reader(meta_raw)
     header = True
     docIndex = 0
@@ -89,22 +89,19 @@ author2doc_MSI = {
 #print(data)
 df = pd.read_csv("merged_counts_indels.tsv", sep="\t", index_col = 0)
 
-data = df.to_numpy(dtype = int)
-# print(len(data[0]))
-data = data.T
-################################
-# here is the fix for parsing  #
-################################
-from gensim.matutils import Dense2Corpus
-from gensim.matutils import MmWriter
+# data = df.to_numpy(dtype = int)
 
-corpus = Dense2Corpus(data)
-mmwriter = MmWriter('authortopic_corpus')
-# mmwriter.fake_headers(0,0,0)
-mmwriter.write_corpus('authortopic_corpus',corpus)
-
-# corpus_in_memory = [corpus[i] for i in range(len(corpus))]
-
+# make this into our *own* corpus - list of lists of tuples (int, float) which correspond to (index, count)
+corpus = []
+# this is very anti-pandas code, but some hacking is required to make this work
+for index, row in df.iterrows() :
+    row = row.tolist()
+    curr_doc = []
+    for i in range(len(row)) :
+        curr_item = row[i]
+        if curr_item > 0 :
+            curr_doc.append((i, curr_item))
+    corpus.append(curr_doc)
 # dictionary = Dictionary(data)
 # corpus = [dictionary.doc2bow(text) for text in data]
 
