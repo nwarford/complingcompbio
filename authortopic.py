@@ -4,6 +4,7 @@ from gensim.corpora import mmcorpus, Dictionary
 import random
 import numpy as np
 import pandas as pd
+import csv
 # Adapted by Noel from the example at https://radimrehurek.com/gensim/models/atmodel.html
 
 # generate authorship based on a simple rule for the toy data - author0: 0, 3, 6; author1: 1, 4, 7; author2: 2, 5, 8
@@ -33,24 +34,51 @@ author2doc = {
 has_POLE = []
 no_POLE = []
 
+# Mode 2: author 1 has MSI-high bucket, author 2 has MSI-medium-bucket, author 3 has MSI-low-bucket
+MSI_high = []
+MSI_medium = []
+MSI_low = []
 
+
+with open("haradhvala_metadata.csv",mode="r") as meta_raw :
+    metaIn = csv.reader(meta_raw)
+    header = True
+    docIndex = 0
+    for row in metaIn :
+        if header :
+            header = False
+            continue
+
+        if row[1] == 'None' :
+            no_POLE.append(docIndex)
+        else :
+            has_POLE.append(docIndex)
+
+        if row[4] == 'NaN' :
+            MSI_low.append(docIndex)
+        else :
+            MSI_num = int(row[4])
+            if MSI_num <= 20 :
+                MSI_low.append(docIndex)
+            elif MSI_num > 20 and MSI_num <= 50 :
+                MSI_medium.append(docIndex)
+            else :
+                MSI_high.append(docIndex)
+
+        docIndex += 1
 
 author2doc_POLE = {
     'has_POLE' : has_POLE,
     'no_POLE' : no_POLE
 }
-
-# Mode 2: author 1 has MSI-high bucket, author 2 has MSI-medium-bucket, author 3 has MSI-low-bucket
-
-MSI_high = []
-MSI_medium = []
-MSI_low = []
+# print(author2doc_POLE['has_POLE'])
 
 author2doc_MSI = {
     'MSI_high' : MSI_high,
     'MSI_medium' : MSI_medium,
     'MSI_low' : MSI_low
 }
+# print(author2doc_MSI['MSI_medium'])
 
 #data = np.random.randint(low = 0, high = 100, size = (96, 6), dtype = int)
 #for i in range(48):
@@ -62,7 +90,7 @@ author2doc_MSI = {
 df = pd.read_csv("merged_counts_indels.tsv", sep="\t", index_col = 0)
 
 data = df.to_numpy(dtype = int)
-print(len(data[0]))
+# print(len(data[0]))
 data = data.T
 ################################
 # here is the fix for parsing  #
@@ -70,6 +98,7 @@ data = data.T
 from gensim.matutils import Dense2Corpus
 
 corpus = Dense2Corpus(data)
+corpus_in_memory = [corpus[i] for i in range(len(corpus))]
 
 # dictionary = Dictionary(data)
 # corpus = [dictionary.doc2bow(text) for text in data]
@@ -78,9 +107,9 @@ num_topics = 12
 curr_author = author2doc_POLE
 
 model = AuthorTopicModel(
-    corpus,
+    corpus=corpus_in_memory,
     author2doc=curr_author,
-    id2word=dictionary,
+    #id2word=dictionary,
     num_topics=num_topics
 )
 
