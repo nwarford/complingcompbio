@@ -33,6 +33,8 @@ author2doc = {
 has_POLE = []
 no_POLE = []
 
+
+
 author2doc_POLE = {
     'has_POLE' : has_POLE,
     'no_POLE' : no_POLE
@@ -60,10 +62,17 @@ author2doc_MSI = {
 df = pd.read_csv("merged_counts_indels.tsv", sep="\t", index_col = 0)
 
 data = df.to_numpy(dtype = int)
+print(len(data[0]))
+data = data.T
+################################
+# here is the fix for parsing  #
+################################
+from gensim.matutils import Dense2Corpus
 
-dictionary = Dictionary(data)
+corpus = Dense2Corpus(data)
 
-corpus = [dictionary.doc2bow(text) for text in data]
+# dictionary = Dictionary(data)
+# corpus = [dictionary.doc2bow(text) for text in data]
 
 num_topics = 12
 curr_author = author2doc_POLE
