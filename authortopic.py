@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 # Adapted by Noel from the example at https://radimrehurek.com/gensim/models/atmodel.html
 
-# generate authorship based on a simple rule - author0: 0, 3, 6; author1: 1, 4, 7; author2: 2, 5, 8
+# generate authorship based on a simple rule for the toy data - author0: 0, 3, 6; author1: 1, 4, 7; author2: 2, 5, 8
+"""
 author0 = []
 author1 = []
 author2 = []
@@ -24,6 +25,30 @@ author2doc = {
     'author1': author1,
     'author2': author2
 }
+"""
+
+# Now to generate actual authorship
+
+# Mode 1: author 1 is the author who has the POLE mutation, author 2 does not.
+has_POLE = []
+no_POLE = []
+
+author2doc_POLE = {
+    'has_POLE' : has_POLE,
+    'no_POLE' : no_POLE
+}
+
+# Mode 2: author 1 has MSI-high bucket, author 2 has MSI-medium-bucket, author 3 has MSI-low-bucket
+
+MSI_high = []
+MSI_medium = []
+MSI_low = []
+
+author2doc_MSI = {
+    'MSI_high' : MSI_high,
+    'MSI_medium' : MSI_medium,
+    'MSI_low' : MSI_low
+}
 
 #data = np.random.randint(low = 0, high = 100, size = (96, 6), dtype = int)
 #for i in range(48):
@@ -32,7 +57,7 @@ author2doc = {
         #data[95-i,5-j] = 0
 #data = data.T
 #print(data)
-df = pd.read_csv("sbs_counts.tsv", sep="\t", index_col = 0)
+df = pd.read_csv("merged_counts_indels.tsv", sep="\t", index_col = 0)
 
 data = df.to_numpy(dtype = int)
 
@@ -40,8 +65,14 @@ dictionary = Dictionary(data)
 
 corpus = [dictionary.doc2bow(text) for text in data]
 
+num_topics = 12
+curr_author = author2doc_POLE
+
 model = AuthorTopicModel(
-    corpus, author2doc=author2doc, id2word=dictionary, num_topics=2
+    corpus,
+    author2doc=curr_author,
+    id2word=dictionary,
+    num_topics=num_topics
 )
 
 # construct vectors for authors
