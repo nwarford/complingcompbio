@@ -85,6 +85,10 @@ model = AuthorTopicModel(
 )
 
 # construct vectors for authors
-author_vecs = [model.get_author_topics(author) for author in model.id2author.values()]
-
-print(author_vecs)
+# author_vecs = [model.get_author_topics(author) for author in model.id2author.values()]
+#
+# print(author_vecs)
+tops = model.get_topics()
+np.savetxt("authortopic_output.csv", tops, delimiter=",")
+print(len(tops[0]))
+print(tops)
