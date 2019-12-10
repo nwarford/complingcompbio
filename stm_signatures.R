@@ -284,6 +284,19 @@ gen_toy_metadata <- function(){
 # reading data     #
 ####################
 
+load_metadata <- function() {
+	unformatted_df = read.table(file = "haradhvala_metadata.csv", sep=",", header=T, stringsAsFactors=FALSE)
+	return (unformatted_df)	
+}
+
+load_sbs_indel_data <- function(){
+	unformatted_df = read.table(file = "merged_counts_indels.tsv", sep="\t", header=TRUE)
+	rownames(unformatted_df) = unformatted_df$X
+	df = unformatted_df[-1]
+	m = data.matrix(df, rownames.force=T)
+	return( as(m, "dgCMatrix") )
+}
+
 load_sbs_data <- function(){
 	unformatted_df = read.table(file = "sbs_counts.tsv", sep="\t", header=TRUE)
 	rownames(unformatted_df) = unformatted_df$X
@@ -321,9 +334,36 @@ load_pbmc5k_atac <- function() {
 
 
 
-print(gen_toy_mtx())
-print(gen_toy_metadata())
-vanilla_baseline_experiment()
+################################
+# match data with metadata     #
+################################
+
+match_data_metadata <- function(data, meta) {
+	m = data
+	rownames(m) = substr(rownames(data), 1, 12) # sample names in metadata are truncated to 12 characters
+	df = as.data.frame(as.matrix(m)) # can't convert directly from sparse matrix
+	df$POLE_mutation = rep("UNKNOWN", nrow(df))
+	df$POLD1_mutation = rep("UNKNOWN", nrow(df))
+	df$nMS_indels = rep(NaN, nrow(df))
+	print("hello")
+	for (i in 1:nrow(df)) {
+		if (meta$Sample[i] %in% rownames(df) ) {
+			
+			df[meta$Sample[i],]$POLE_mutation = meta$POLE_mutation[i]
+			df[meta$Sample[i],]$POLD1_mutation = meta$POLD1_mutation[i]
+			df[meta$Sample[i],]$nMS_indels = meta$nMS_indels[i]
+		}	
+	}
+	return(df)
+}
+
+
+
+
+
+#print(gen_toy_mtx())
+#print(gen_toy_metadata())
+#vanilla_baseline_experiment()
 
 
 
