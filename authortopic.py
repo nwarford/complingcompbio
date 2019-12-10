@@ -49,12 +49,12 @@ with open("haradhvala_metadata.csv",mode="r") as meta_raw :
             header = False
             continue
 
-        if row[1] == 'None' :
+        if row[1545] == 'None' or row[1545] == 'UNKNOWN' : # will throw out later
             no_POLE.append(docIndex)
         else :
             has_POLE.append(docIndex)
 
-        if row[4] == 'NaN' :
+        if row[1547] == 'NA' :
             MSI_low.append(docIndex)
         else :
             MSI_num = int(row[4])
@@ -96,9 +96,14 @@ data = data.T
 # here is the fix for parsing  #
 ################################
 from gensim.matutils import Dense2Corpus
+from gensim.matutils import MmWriter
 
 corpus = Dense2Corpus(data)
-corpus_in_memory = [corpus[i] for i in range(len(corpus))]
+mmwriter = MmWriter('authortopic_corpus')
+# mmwriter.fake_headers(0,0,0)
+mmwriter.write_corpus('authortopic_corpus',corpus)
+
+# corpus_in_memory = [corpus[i] for i in range(len(corpus))]
 
 # dictionary = Dictionary(data)
 # corpus = [dictionary.doc2bow(text) for text in data]
@@ -107,7 +112,7 @@ num_topics = 12
 curr_author = author2doc_POLE
 
 model = AuthorTopicModel(
-    corpus=corpus_in_memory,
+    corpus=corpus,
     author2doc=curr_author,
     #id2word=dictionary,
     num_topics=num_topics
