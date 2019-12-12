@@ -21,7 +21,12 @@ data_toy = np.random.randint(low = 0, high = 100, size = (96, 6), dtype = int)
 #print(data)
 
 df = pd.read_csv("merged_counts_indels.tsv", sep="\t", index_col = 0)
-
+#df.drop('INS1', axis = 1)
+#df.drop(['INS1','INS2','INS3','INS4','DEL1','DEL2','DEL3','DEL4'], axis = 1)
+#print(df.columns)
+#print(len(df.index))
+df = df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
+#print(len(df.index))
 data = df.to_numpy(dtype = int)
 print(len(data[0]))
 data = data.T
