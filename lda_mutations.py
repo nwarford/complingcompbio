@@ -99,19 +99,70 @@ np.savetxt("lda_output.csv", tops, delimiter=",")
 #from pprint import pprint
 #pprint(top_topics)
 
-#double checking count
-index = 0
+POLE_topics = {
+    'has_POLE' : {},
+    'no_POLE' : {}
+}
+
+MSI_topics = {
+    'MSI_high' : {},
+    'MSI_medium' : {},
+    'MSI_low' : {}
+}
+
 with open('counts_with_metadata.csv',mode='r') as f :
     reader = csv.reader(f)
     header = reader.__next__()
+    index = 0
     for document in corpus :
-        # print(document)
-        
-        while index in whereNA :
+
+        while index in whereNA : # need to skip the NAs that were removed
             reader.__next__()
             index += 1
 
-        # print(reader.__next__())
+        # This block returns the topic with highest probability for the document as highestTopic
+        docTopics = model.get_document_topics(document)
+        # print(docTopics)
+        probs = [item[1] for item in docTopics]
+        highest = probs.index(max(probs))
+        topicIndices = [item[0] for item in docTopics]
+        highestTopic = topicIndices[highest]
+        # print(highestTopic)
+
+        row = reader.__next__()
+        # Here, we find out the metadata info - both POLE status and which bucket of MSI it's in
+        if row[1545] == 'None' or row[1545] == 'UNKNOWN' : # will throw out later
+            # It is in the no_POLE group
+            poleGroup = 'no_POLE'
+        else :
+            poleGroup = 'has_POLE'
+
+        if row[1547] == 'NA' :
+            msiGroup = 'MSI_low'
+        else :
+            MSI_num = int(row[1547])
+            if MSI_num <= 20 :
+                msiGroup = 'MSI_low'
+            elif MSI_num > 20 and MSI_num <= 50 :
+                msiGroup = 'MSI_medium'
+            else :
+                msiGroup = 'MSI_high'
+
+        # Here, we update the appropriate dictionaries
+        if highestTopic in POLE_topics[poleGroup] :
+            currVal = POLE_topics[poleGroup][highestTopic]
+            POLE_topics[poleGroup][highestTopic] = currVal + 1
+        else :
+            POLE_topics[poleGroup][highestTopic] = 1
+
+        if highestTopic in MSI_topics[msiGroup] :
+            currVal = MSI_topics[msiGroup][highestTopic]
+            MSI_topics[msiGroup][highestTopic] = currVal + 1
+        else :
+            MSI_topics[msiGroup][highestTopic] = 1
+
+
         index+=1
         # print(model.get_document_topics(document))
-print(index)
+print(POLE_topics)
+print(MSI_topics)

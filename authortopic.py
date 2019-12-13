@@ -57,7 +57,7 @@ with open("counts_with_metadata.csv",mode="r") as meta_raw :
         if row[1547] == 'NA' :
             MSI_low.append(docIndex)
         else :
-            MSI_num = int(row[4])
+            MSI_num = int(row[1547])
             if MSI_num <= 20 :
                 MSI_low.append(docIndex)
             elif MSI_num > 20 and MSI_num <= 50 :
