@@ -6,7 +6,7 @@ from gensim.corpora import Dictionary
 
 from gensim.test.utils import common_texts
 import pandas as pd
-
+import csv
 # Create a corpus from a list of texts
 #common_dictionary = Dictionary(common_texts)
 #common_corpus = [common_dictionary.doc2bow(text) for text in common_texts]
@@ -25,10 +25,11 @@ df = pd.read_csv("merged_counts_indels.tsv", sep="\t", index_col = 0)
 #df.drop(['INS1','INS2','INS3','INS4','DEL1','DEL2','DEL3','DEL4'], axis = 1)
 #print(df.columns)
 #print(len(df.index))
+whereNA = pd.isnull(df).any(1).nonzero()[0]
 df = df.dropna(axis=0, how='any', thresh=None, subset=None, inplace=False)
 #print(len(df.index))
 data = df.to_numpy(dtype = int)
-print(len(data[0]))
+# print(len(data[0]))
 data = data.T
 ################################
 # here is the fix for parsing  #
@@ -92,8 +93,25 @@ model = LdaModel(
 #print('Average topic coherence: %.4f.' % avg_topic_coherence)
 tops = model.get_topics()
 np.savetxt("lda_output.csv", tops, delimiter=",")
-print(len(tops[0]))
-print(tops)
+# print(len(tops[0]))
+# print(tops)
 
 #from pprint import pprint
 #pprint(top_topics)
+
+#double checking count
+index = 0
+with open('counts_with_metadata.csv',mode='r') as f :
+    reader = csv.reader(f)
+    header = reader.__next__()
+    for document in corpus :
+        # print(document)
+        
+        while index in whereNA :
+            reader.__next__()
+            index += 1
+
+        # print(reader.__next__())
+        index+=1
+        # print(model.get_document_topics(document))
+print(index)
