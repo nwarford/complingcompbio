@@ -106,20 +106,38 @@ for index, row in df.iterrows() :
 # corpus = [dictionary.doc2bow(text) for text in data]
 
 num_topics = 12
-curr_author = author2doc_POLE
 
-model = AuthorTopicModel(
+model_POLE = AuthorTopicModel(
     corpus=corpus,
-    author2doc=curr_author,
+    author2doc=author2doc_POLE,
     #id2word=dictionary,
     num_topics=num_topics
 )
+
+model_MSI = AuthorTopicModel(
+    corpus=corpus,
+    author2doc=author2doc_MSI,
+    #id2word=dictionary,
+    num_topics=num_topics
+)
+
 
 # construct vectors for authors
 # author_vecs = [model.get_author_topics(author) for author in model.id2author.values()]
 #
 # print(author_vecs)
-tops = model.get_topics()
-np.savetxt("authortopic_output.csv", tops, delimiter=",")
-print(len(tops[0]))
-print(tops)
+POLE_tops = model_POLE.get_topics()
+np.savetxt("authortopic_POLE_output.csv", POLE_tops, delimiter=",")
+
+MSI_tops = model_MSI.get_topics()
+np.savetxt("authortopic_MSI_output.csv", POLE_tops, delimiter=",")
+
+# print(len(tops[0]))
+# print(tops)
+for author in author2doc_POLE :
+    print(author)
+    print(model_POLE.get_author_topics(author))
+
+for author in author2doc_MSI :
+    print(author)
+    print(model_MSI.get_author_topics(author))
