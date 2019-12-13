@@ -64,7 +64,7 @@ eval_every = 10
 
 #dictionary = Dictionary(data)
 #print(dictionary)
-#temp = dictionary[0]  # This is only to "load" the dictionary.                                           
+#temp = dictionary[0]  # This is only to "load" the dictionary.
 #id2word = dictionary.id2token
 #id2word = common_dictionary
 
